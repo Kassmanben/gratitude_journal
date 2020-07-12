@@ -105,7 +105,7 @@ app.post("/sms", (req, res) => {
           text: text,
           subject: "Gratitude Journal",
           from_email: process.env.SENDER_EMAIL,
-          from_name: process.env.RECIEVER_NAME + ", but in the cloud 🤫",,
+          from_name: process.env.RECIEVER_NAME + ", but in the cloud 🤫",
           to: [
             {
               email: process.env.RECIEVER_EMAIL,
@@ -189,7 +189,7 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("15 * * * *", function () {
+schedule.scheduleJob("18 * * * *", function () {
   Journal.getAllEntriesByJournalname(journalName, (err, entries) => {
     if (err) {
       return;
@@ -201,10 +201,10 @@ schedule.scheduleJob("15 * * * *", function () {
       console.log("Entry Date" + entryDate);
       console.log("Now Date" + moment().format("MM-DD-YYYY"));
       if (entryDate === moment().format("MM-DD-YYYY")) {
-          checkedOff = true
+        checkedOff = true;
       }
     });
-    if (!checkedOff){
+    if (!checkedOff) {
       const client = require("twilio")(accountSid, authToken);
       client.messages
         .create({
@@ -214,9 +214,7 @@ schedule.scheduleJob("15 * * * *", function () {
         })
         .then((message) => console.log(message.sid));
     }
-    
   });
-  
 });
 
 app.listen(port, () => {
