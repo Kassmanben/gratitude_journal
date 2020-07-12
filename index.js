@@ -189,13 +189,13 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("47 * * * *", function () {
+schedule.scheduleJob("50 * * * *", function () {
   const client = require("twilio")(accountSid, authToken);
   client.messages
     .create({
       body: "test message",
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone,
+      to: process.env.MY_PHONE_NUMBER,
     })
     .then((message) => console.log(message.sid));
 });
