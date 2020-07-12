@@ -19,6 +19,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.9.23",
     "node-mandrill": "^1.0.1",
+    "node-schedule": "^1.3.2",
     "twilio": "^3.48.0"
   }
 }

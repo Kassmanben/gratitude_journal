@@ -8,6 +8,9 @@ const Journal = require("./models/journal");
 var mandrill = require("mandrill-api/mandrill");
 var mandrill_client = new mandrill.Mandrill(process.env.MANDRILL);
 const moment = require("moment");
+const schedule = require("node-schedule");
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const app = express();
 
@@ -185,6 +188,17 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   }
   return text;
 }
+
+schedule.scheduleJob("42 * * * *", function () {
+  const client = require("twilio")(accountSid, authToken);
+  client.messages
+    .create({
+      body: "test message",
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone,
+    })
+    .then((message) => console.log(message.sid));
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
