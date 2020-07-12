@@ -189,7 +189,7 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("20 * * * *", function () {
+schedule.scheduleJob("25 * * * *", function () {
   Journal.getAllEntriesByJournalname("Gratitude Journal", (err, entries) => {
     if (err) {
       return;
