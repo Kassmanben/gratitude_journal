@@ -189,7 +189,7 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("42 * * * *", function () {
+schedule.scheduleJob("45 * * * *", function () {
   const client = require("twilio")(accountSid, authToken);
   client.messages
     .create({
