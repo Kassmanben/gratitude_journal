@@ -105,7 +105,7 @@ app.post("/sms", (req, res) => {
           text: text,
           subject: "Gratitude Journal",
           from_email: process.env.SENDER_EMAIL,
-          from_name: "🥰",
+          from_name: process.env.RECIEVER_NAME + ", but in the cloud 🤫",,
           to: [
             {
               email: process.env.RECIEVER_EMAIL,
@@ -189,15 +189,34 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("50 * * * *", function () {
-  const client = require("twilio")(accountSid, authToken);
-  client.messages
-    .create({
-      body: "test message",
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: process.env.MY_PHONE_NUMBER,
-    })
-    .then((message) => console.log(message.sid));
+schedule.scheduleJob("15 * * * *", function () {
+  Journal.getAllEntriesByJournalname(journalName, (err, entries) => {
+    if (err) {
+      return;
+    }
+
+    var checkedOff = false;
+    entries.entries.forEach((entry) => {
+      var entryDate = moment.utc(entry.date).local().format("MM-DD-YYYY");
+      console.log("Entry Date" + entryDate);
+      console.log("Now Date" + moment().format("MM-DD-YYYY"));
+      if (entryDate === moment().format("MM-DD-YYYY")) {
+          checkedOff = true
+      }
+    });
+    if (!checkedOff){
+      const client = require("twilio")(accountSid, authToken);
+      client.messages
+        .create({
+          body: "Time to do your journal entry 😌",
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: process.env.MY_PHONE_NUMBER,
+        })
+        .then((message) => console.log(message.sid));
+    }
+    
+  });
+  
 });
 
 app.listen(port, () => {
