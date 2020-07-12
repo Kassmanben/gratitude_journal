@@ -189,8 +189,8 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   return text;
 }
 
-schedule.scheduleJob("18 * * * *", function () {
-  Journal.getAllEntriesByJournalname(journalName, (err, entries) => {
+schedule.scheduleJob("20 * * * *", function () {
+  Journal.getAllEntriesByJournalname("Gratitude Journal", (err, entries) => {
     if (err) {
       return;
     }
