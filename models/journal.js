@@ -26,10 +26,6 @@ const JournalSchema = mongoose.Schema({
 
 const Journal = (module.exports = mongoose.model("Journal", JournalSchema));
 
-module.exports.getJournalById = function (id, callback) {
-  Journal.findById(id, callback);
-};
-
 module.exports.getJournalByJournalname = function (journalName, callback) {
   const query = { name: journalName };
   return Journal.find(query, callback);

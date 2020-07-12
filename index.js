@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const config = require("./config/database");
 const cors = require("cors");
 const MessagingResponse = require("twilio").twiml.MessagingResponse;
 const Journal = require("./models/journal");
@@ -12,8 +11,6 @@ const moment = require("moment");
 
 const app = express();
 
-const journal = require("./routes/journal");
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
@@ -22,12 +19,10 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 
-app.use("/journal", journal);
-
-mongoose.connect(config.database);
+mongoose.connect(process.env.MONGO_URI);
 
 mongoose.connection.on("connected", () => {
-  console.log("Connected to database: " + config.database);
+  console.log("Connected to database: " + process.env.MONGO_URI);
 });
 
 mongoose.connection.on("error", (err) => {
@@ -41,12 +36,12 @@ app.post("/sms", (req, res) => {
     req.body.Body.toLowerCase().startsWith("new journal:") ||
     req.body.Body.toLowerCase().startsWith("nj:")
   ) {
-    var journalName = req.body.Body.replace(/new journal:/gi, "")
-      .replace(/nj:/)
-      .split(" ")
-      .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-      .join(" ")
-      .trim();
+    var journalName = formatBodyText(
+      req.body.Body,
+      /new journal:/gi,
+      /nj:/gi,
+      "newJournal"
+    );
     Journal.getJournalByJournalname(journalName, (err, journals) => {
       if (journals.length > 0) {
         twiml.message("There is already a journal called " + journalName);
@@ -66,7 +61,6 @@ app.post("/sms", (req, res) => {
             });
           }
           twiml.message("New Journal: " + journalName + " created");
-
           res.writeHead(200, { "Content-Type": "text/xml" });
           res.end(twiml.toString());
         });
@@ -76,24 +70,18 @@ app.post("/sms", (req, res) => {
     var journalName =
       req.body.Body.toLowerCase().startsWith("journal:") ||
       req.body.Body.toLowerCase().startsWith("j:")
-        ? req.body.Body.replace(/journal:/gi, "")
-            .replace(/j:/gi, "")
-            .split(";")[0]
-            .split(" ")
-            .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-            .join(" ")
-            .trim()
+        ? formatBodyText(
+            req.body.Body,
+            /journal:/gi,
+            /j:/gi,
+            "entryJournalName"
+          )
         : "Gratitude Journal";
 
     var journalEntry =
       req.body.Body.toLowerCase().startsWith("journal:") ||
       req.body.Body.toLowerCase().startsWith("j:")
-        ? req.body.Body.replace(/journal:/gi, "")
-            .replace("j:", "")
-            .split(";")
-            .slice(1)
-            .join(" ")
-            .trim()
+        ? formatBodyText(req.body.Body, /journal:/gi, /j:/gi, "entry")
         : req.body.Body;
     if (journalEntry.toLowerCase().startsWith("send all")) {
       Journal.getAllEntriesByJournalname(journalName, (err, entries) => {
@@ -113,12 +101,12 @@ app.post("/sms", (req, res) => {
           html: "<p>" + text + "</p>",
           text: text,
           subject: "Gratitude Journal",
-          from_email: "me@kassmanben.com",
+          from_email: process.env.SENDER_EMAIL,
           from_name: "🥰",
           to: [
             {
-              email: "kassmanben@gmail.com",
-              name: "Ben Kassman",
+              email: process.env.RECIEVER_EMAIL,
+              name: process.env.RECIEVER_NAME,
               type: "to",
             },
           ],
@@ -135,18 +123,15 @@ app.post("/sms", (req, res) => {
             console.log(result);
           },
           function (e) {
-            // Mandrill returns the error as an object with name and message keys
             console.log(
               "A mandrill error occurred: " + e.name + " - " + e.message
             );
-            // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
           }
         );
       });
     } else {
       if (req.body.Body.replace(/[^a-zA-Z\d\s:]/, "").length < 280) {
         twiml.message("Your entry was not long enough");
-
         res.writeHead(200, { "Content-Type": "text/xml" });
         res.end(twiml.toString());
         return;
@@ -169,20 +154,40 @@ app.post("/sms", (req, res) => {
   }
 });
 
+function formatBodyText(text, toReplace, toReplaceAlt, flag) {
+  if (flag === "entry") {
+    text = text
+      .replace(toReplace, "")
+      .replace(toReplaceAlt, "")
+      .split(";")
+      .slice(1)
+      .join(" ")
+      .trim();
+  }
+  if (flag === "entryJournalName") {
+    text = text
+      .replace(toReplace, "")
+      .replace(toReplaceAlt, "")
+      .split(";")[0]
+      .split(" ")
+      .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+      .join(" ")
+      .trim();
+  }
+  if (flag === "newJournal") {
+    text = text
+      .replace(toReplace, "")
+      .replace(toReplaceAlt, "")
+      .split(" ")
+      .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+      .join(" ")
+      .trim();
+  }
+  return text;
+}
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
-function formatDate() {
-  var d = new Date(),
-    month = "" + (d.getMonth() + 1),
-    day = "" + d.getDate(),
-    year = d.getFullYear();
-
-  if (month.length < 2) month = "0" + month;
-  if (day.length < 2) day = "0" + day;
-
-  return [year, month, day].join("-");
-}
 
 module.exports = app;
