@@ -188,32 +188,55 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   }
   return text;
 }
+let rule1 = new schedule.RecurrenceRule();
+rule1.tz = "America/Los_Angeles";
+rule1.minute = 0;
+rule1.hour = new schedule.Range(18, 20);
 
-schedule.scheduleJob("25 * * * *", function () {
-  Journal.getAllEntriesByJournalname("Gratitude Journal", (err, entries) => {
-    if (err) {
-      return;
-    }
+let rule2 = new schedule.RecurrenceRule();
+rule2.tz = "America/Los_Angeles";
+rule2.minute = new schedule.Range(0, 59, 20);
+rule2.hour = new schedule.Range(20, 21);
 
-    var checkedOff = false;
-    entries.entries.forEach((entry) => {
-      var entryDate = moment.utc(entry.date).local().format("MM-DD-YYYY");
-      console.log("Entry Date" + entryDate);
-      console.log("Now Date" + moment().format("MM-DD-YYYY"));
-      if (entryDate === moment().format("MM-DD-YYYY")) {
-        checkedOff = true;
+let rule3 = new schedule.RecurrenceRule();
+rule3.tz = "America/Los_Angeles";
+rule3.minute = new schedule.Range(0, 59, 10);
+rule3.hour = new schedule.Range(21, 22);
+
+let rule4 = new schedule.RecurrenceRule();
+rule4.tz = "America/Los_Angeles";
+rule4.minute = new schedule.Range(0, 59);
+rule4.hour = new schedule.Range(18, 23);
+
+rules = [rule1, rule2, rule3, rule4];
+
+rules.forEach((r) => {
+  schedule.scheduleJob(r, function () {
+    Journal.getAllEntriesByJournalname("Gratitude Journal", (err, entries) => {
+      if (err) {
+        return;
+      }
+
+      var checkedOff = false;
+      entries.entries.forEach((entry) => {
+        var entryDate = moment.utc(entry.date).local().format("MM-DD-YYYY");
+        console.log("Entry Date" + entryDate);
+        console.log("Now Date" + moment().format("MM-DD-YYYY"));
+        if (entryDate === moment().format("MM-DD-YYYY")) {
+          checkedOff = false;
+        }
+      });
+      if (!checkedOff) {
+        const client = require("twilio")(accountSid, authToken);
+        client.messages
+          .create({
+            body: "Time to do your journal entry 😌",
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: process.env.MY_PHONE_NUMBER,
+          })
+          .then((message) => console.log(message.sid));
       }
     });
-    if (!checkedOff) {
-      const client = require("twilio")(accountSid, authToken);
-      client.messages
-        .create({
-          body: "Time to do your journal entry 😌",
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: process.env.MY_PHONE_NUMBER,
-        })
-        .then((message) => console.log(message.sid));
-    }
   });
 });
 
