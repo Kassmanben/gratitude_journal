@@ -206,7 +206,7 @@ rule3.hour = new schedule.Range(21, 22);
 let rule4 = new schedule.RecurrenceRule();
 rule4.tz = "America/Los_Angeles";
 rule4.minute = new schedule.Range(0, 59);
-rule4.hour = new schedule.Range(18, 23);
+rule4.hour = new schedule.Range(22, 23);
 
 rules = [rule1, rule2, rule3, rule4];
 
@@ -223,7 +223,7 @@ rules.forEach((r) => {
         console.log("Entry Date" + entryDate);
         console.log("Now Date" + moment().format("MM-DD-YYYY"));
         if (entryDate === moment().format("MM-DD-YYYY")) {
-          checkedOff = false;
+          checkedOff = true;
         }
       });
       if (!checkedOff) {
