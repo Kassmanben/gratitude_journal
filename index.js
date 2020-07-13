@@ -188,21 +188,26 @@ function formatBodyText(text, toReplace, toReplaceAlt, flag) {
   }
   return text;
 }
+
+//Start pestering, if there are no entries at 6PST
 let rule1 = new schedule.RecurrenceRule();
 rule1.tz = "America/Los_Angeles";
 rule1.minute = 0;
 rule1.hour = new schedule.Range(18, 20);
 
+//Continue pestering, now every 20 min if there are still no entries at 8PST
 let rule2 = new schedule.RecurrenceRule();
 rule2.tz = "America/Los_Angeles";
 rule2.minute = new schedule.Range(0, 59, 20);
 rule2.hour = new schedule.Range(20, 21);
 
+//Continue pestering, now every 10 min if there are still no entries at 9PST
 let rule3 = new schedule.RecurrenceRule();
 rule3.tz = "America/Los_Angeles";
 rule3.minute = new schedule.Range(0, 59, 10);
 rule3.hour = new schedule.Range(21, 22);
 
+//Continue pestering, now every min if there are still no entries at 10PST
 let rule4 = new schedule.RecurrenceRule();
 rule4.tz = "America/Los_Angeles";
 rule4.minute = new schedule.Range(0, 59);
