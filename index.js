@@ -94,7 +94,7 @@ app.post("/sms", (req, res) => {
         var text = "";
         entries.entries.forEach((entry) => {
           text +=
-            moment.utc(entry.date).local().format("MM-DD-YYYY") +
+            moment(entry.date).local().format("MM-DD-YYYY") +
             ":<br><br>" +
             entry.entry +
             "<br><br>";
@@ -224,7 +224,7 @@ rules.forEach((r) => {
 
       var checkedOff = false;
       entries.entries.forEach((entry) => {
-        var entryDate = moment.utc(entry.date).local().format("MM-DD-YYYY");
+        var entryDate = moment(entry.date).local().format("MM-DD-YYYY");
         console.log("Entry Date" + entryDate);
         console.log("Now Date" + moment().format("MM-DD-YYYY"));
         if (entryDate === moment().format("MM-DD-YYYY")) {

@@ -1,23 +1,12 @@
 const mongoose = require("mongoose");
-
-function formatDate() {
-  var d = new Date(),
-    month = "" + (d.getMonth() + 1),
-    day = "" + d.getDate(),
-    year = d.getFullYear();
-
-  if (month.length < 2) month = "0" + month;
-  if (day.length < 2) day = "0" + day;
-
-  return [year, month, day].join("-");
-}
+const moment = require("moment");
 
 const JournalSchema = mongoose.Schema({
   name: String,
   entries: {
     type: [
       {
-        date: Date,
+        date: String,
         entry: String,
       },
     ],
@@ -49,7 +38,7 @@ module.exports.addEntryByJournalName = function (journalName, entry, callback) {
     {
       $push: {
         entries: {
-          date: formatDate(),
+          date: moment().format("MM-DD-YYYY"),
           entry: entry,
         },
       },
